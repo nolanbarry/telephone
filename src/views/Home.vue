@@ -2,27 +2,39 @@
 <div class='container'>
   <div class='content'>
     <div id='title'>Telephone!</div>
-    <div id='description'>Put a sentence or phrase in the text box below and choose
-      how many times you want to run it through the translator. Then click go and let 'er
-      rip!</div>
-    <form id='submission'>
+    <div class='container'>
+      <div id='description'>Put a sentence or phrase in the text box below and choose
+        how many times you want to run it through the translator. Then click go and let 'er
+        rip!
+      </div>
+      <div v-if="!loadingResult" class='container'>
+        <button id='submit' type="button" @click="submit">Go!</button>
+      </div>
+      <div v-else class='container'>
+        <Loading :width="35" />
+      </div>
+    </div>
+    <div id='submission' onsubmit="return false;">
       <textarea type="text" v-model="inputText" id='text-input' autofocus='true' placeholder='Peter Piper picked a peck of pickled peppers'></textarea>
       <div id='slider-container'>
         <input type="range" min="1" max="100" id="slider" v-model="inputIterations">
         <label for="slider">{{inputIterations}}</label>
       </div>
-    </form>
-    <div v-if="!loadingResult" class='container'>
-      <button id='submit' type="button" @click="submit">Go!</button>
-    </div>
-    <div v-else class='container'>
-      <Loading :width="35" />
     </div>
     <div id='console'>
       <div v-for='entry in console' :key='entry.entryNumber' class='console-entry'>
         <a :style="'color: ' + entry.textColor" class='console-text'>{{'\t' + entry.text}}</a>
         <a :style="'color: ' + entry.headerColor" class='console-header'>{{`[${entry.header}] `}}</a>
       </div>
+    </div>
+    <div id='console-controls'>
+      <button id='toggle-full-names' class='console-button' @click='toggleNames'>
+        <i v-if='useFullNames' class="far fa-square"></i>
+        <i v-else class="fas fa-check-square"></i>
+      </button>
+      <label class='console-label'>Abbreviate Language Names</label>
+      <button id='clear-console' class='console-button' @click='clear'><i class="far fa-trash-alt"></i>
+      </button>
     </div>
   </div>
 </div>
@@ -46,7 +58,8 @@ export default {
       inputIterations: 25,
       loadingResult: false,
       console: [],
-      languages: null
+      languages: null,
+      useFullNames: false
     }
   },
   methods: {
@@ -65,7 +78,6 @@ export default {
       let previousLanguage = null
       let nextLanguage = 'en'
       let headerColor = '#aaaaaa'
-      let useFullName = false
       this.log(currentText, 'INPUT', '#92FF92')
       for (let i = 0; i < iterations; ++i) {
         previousLanguage = nextLanguage
@@ -73,7 +85,7 @@ export default {
         nextLanguage = keys[Math.floor(Math.random() * keys.length)]
         let translation = (await this.translate(currentText, previousLanguage, nextLanguage)).data[0].translations;
         this.log(translation[0].text,
-          `${useFullName ? this.languages[previousLanguage].name : previousLanguage} >> ${useFullName ? this.languages[nextLanguage].name : nextLanguage}`,
+          `${this.useFullNames ? this.languages[previousLanguage].name : previousLanguage} >> ${this.useFullNames ? this.languages[nextLanguage].name : nextLanguage}`,
           headerColor)
         currentText = translation[0].text;
       }
@@ -154,18 +166,14 @@ export default {
         textColor,
         entryNumber: this.console.length
       })
+    },
+    clear() {
+      this.console = [];
+    },
+    toggleNames() {
+      this.useFullNames = !this.useFullNames
     }
   },
-  computed: {
-    consoleLog() {
-      return this.console.reduce((sum, next) => sum + next + '\n', '');
-    }
-  },
-  watched: {
-    consoleLog(newValue) {
-      console.log(newValue);
-    }
-  }
 }
 </script>
 
@@ -173,6 +181,7 @@ export default {
 .container {
   display: flex;
   justify-content: center;
+  align-items: flex-end;
   margin: 10px;
 }
 
@@ -267,6 +276,7 @@ label {
   border: none;
   border-radius: 20px;
   width: 100%;
+  min-height: 50vh;
   max-height: 50vh;
   resize: none;
   border: none;
@@ -274,7 +284,28 @@ label {
   padding: 10px;
   overflow: scroll;
   overflow-x: hidden;
-  margin: auto;
+  margin-top: 20px;
+}
+
+#console::-webkit-scrollbar {
+  display: block;
+  width: 8px;
+  background-color: transparent;
+}
+
+#console::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+#console::-webkit-scrollbar-track-piece:end {
+  background: transparent;
+  margin-bottom: 12px;
+}
+
+#console::-webkit-scrollbar-track-piece:start {
+  background: transparent;
+  margin-top: 12px;
 }
 
 .console-entry {
@@ -285,6 +316,7 @@ label {
   color: #eeeeee;
   display: flex;
   justify-content: space-between;
+  align-items: center;
   margin-top: 10px;
 }
 
@@ -295,5 +327,62 @@ label {
 
 .console-text {
   max-width: 80%;
+}
+
+#console-controls {
+  font-family: source-code-pro, monospace;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.console-button {
+  font-size: 28px;
+  margin: 10px;
+  margin-right: 4px;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.console-label {
+  user-select: none;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+}
+
+@media only screen and (max-width: 640px) {
+  #description {
+    font-size: 16px;
+  }
+
+  #submit {
+    width: 50px;
+    font-size: 18px;
+  }
+
+  #text-input {
+    font-size: 13px;
+  }
+
+  .console-entry {
+    font-size: 12px;
+  }
+
+  .console-header {
+    font-size: 11px;
+    margin-right: -10px;
+  }
+
+  .console-label {
+    font-size: 13px;
+  }
+
+  .console-button {
+    font-size: 20px;
+  }
 }
 </style>
