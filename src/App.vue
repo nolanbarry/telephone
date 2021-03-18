@@ -1,9 +1,12 @@
 <template>
 <div id="app">
   <div id="nav">
-    <!--<router-link to="/">Telephone</router-link>-->
+    <router-link to="/">Telephone</router-link> |
+    <router-link to="/history">History</router-link>
   </div>
-  <router-view />
+  <transition name='router-fade' mode='out-in'>
+    <router-view />
+  </transition>
 </div>
 </template>
 
@@ -33,5 +36,44 @@
 
 #nav a.router-link-exact-active {
   color: #42b983;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  margin: 10px;
+}
+
+.content {
+  max-width: 1000px;
+  width: 100%;
+  text-align: left;
+  padding: 10px;
+}
+
+.title {
+  font-family: basic-sans, sans-serif;
+  font-weight: 600;
+  font-style: normal;
+  font-size: 50px;
+}
+
+.description {
+  font-family: basic-sans, sans-serif;
+  font-weight: 300;
+  font-style: normal;
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.router-fade-enter-active,
+.router-fade-leave-active {
+  transition: opacity 0.1s ease;
+}
+
+.router-fade-enter-from,
+.router-fade-leave-to {
+  opacity: 0;
 }
 </style>

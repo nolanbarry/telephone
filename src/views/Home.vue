@@ -1,9 +1,9 @@
 <template>
 <div class='container'>
   <div class='content'>
-    <div id='title'>Telephone!</div>
+    <div class='title'>Telephone!</div>
     <div class='container'>
-      <div id='description'>Put a sentence or phrase in the text box below and choose
+      <div class='description'>Put a sentence or phrase in the text box below and choose
         how many times you want to run it through the translator. Then click go and let 'er
         rip!
       </div>
@@ -64,6 +64,7 @@ export default {
   },
   methods: {
     async submit() {
+      this.inputText = this.inputText.trim()
       if (this.languages == null) {
         this.log("Still awaiting call for language list, please try again in a second.", "ERROR")
         return
@@ -89,10 +90,12 @@ export default {
           headerColor)
         currentText = translation[0].text;
       }
-      let translation = (await this.translate(currentText, nextLanguage, 'en')).data[0].translations
-      this.log(translation[0].text,
-        'FINAL RESULT',
-        '#92FF92')
+      let translation = (await this.translate(currentText, nextLanguage, 'en')).data[0].translations[0].text
+      this.log(translation, 'FINAL RESULT', '#92FF92')
+      this.$root.$data.history.unshift({
+        translation,
+        input: this.inputText
+      });
       this.loadingResult = false
     },
     getLanguages() {
@@ -178,34 +181,6 @@ export default {
 </script>
 
 <style scoped>
-.container {
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  margin: 10px;
-}
-
-.content {
-  max-width: 1000px;
-  text-align: left;
-  padding: 10px;
-}
-
-#title {
-  font-family: basic-sans, sans-serif;
-  font-weight: 600;
-  font-style: normal;
-  font-size: 50px;
-}
-
-#description {
-  font-family: basic-sans, sans-serif;
-  font-weight: 300;
-  font-style: normal;
-  font-size: 20px;
-  margin-bottom: 10px;
-}
-
 #submission {
   display: flex;
 }
