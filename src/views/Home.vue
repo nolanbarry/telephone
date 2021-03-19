@@ -11,7 +11,7 @@
         <button id='submit' class='button' type="button" @click="submit">Go!</button>
         <button id='autofill' class='button' type="button" @click="autofill">Autofill</button>
       </div>
-      <div v-else class='container'>
+      <div v-else class='container' id='loading-container'>
         <Loading :width="35" />
       </div>
     </div>
@@ -179,7 +179,7 @@ export default {
     },
     async autofill() {
       let axios = require("axios");
-
+      this.loadingResult = true;
       const options = {
         method: 'GET',
         url: 'https://sameer-kumar-corporate-bs-generator-v1.p.rapidapi.com/',
@@ -190,6 +190,7 @@ export default {
       };
       let fill = await axios.request(options);
       this.inputText = fill.data.phrase;
+      this.loadingResult = false;
     }
   },
 }
@@ -263,6 +264,7 @@ label {
 
 #button-container {
   flex-flow: column-reverse;
+  min-width: 100px;
 }
 
 #submit {
@@ -274,6 +276,13 @@ label {
   background-color: #92FF92;
   border-bottom-color: #00E600;
   font-size: 17px;
+}
+
+#loading-container {
+  width: 150px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 #console {
@@ -363,6 +372,10 @@ label {
 @media only screen and (max-width: 640px) {
   #description {
     font-size: 16px;
+  }
+
+  #loading-container {
+    width: 100%;
   }
 
   #submit {
