@@ -2,13 +2,14 @@
 <div class='container'>
   <div class='content'>
     <div class='title'>Telephone!</div>
-    <div class='container'>
+    <div class='container' id='body'>
       <div class='description'>Put a sentence or phrase in the text box below and choose
         how many times you want to run it through the translator. Then click go and let 'er
-        rip!
+        rip! You can use the autofill button to have it fill in some random corporate speak for you.
       </div>
-      <div v-if="!loadingResult" class='container'>
-        <button id='submit' type="button" @click="submit">Go!</button>
+      <div v-if="!loadingResult" class='container' id='button-container'>
+        <button id='submit' class='button' type="button" @click="submit">Go!</button>
+        <button id='autofill' class='button' type="button" @click="autofill">Autofill</button>
       </div>
       <div v-else class='container'>
         <Loading :width="35" />
@@ -64,11 +65,11 @@ export default {
   },
   methods: {
     async submit() {
-      this.inputText = this.inputText.trim()
       if (this.languages == null) {
         this.log("Still awaiting call for language list, please try again in a second.", "ERROR")
         return
       }
+      this.inputText = this.inputText.trim()
       if (this.inputText == '') {
         this.log("Please type in some input.", "ERROR")
         return
@@ -175,6 +176,20 @@ export default {
     },
     toggleNames() {
       this.useFullNames = !this.useFullNames
+    },
+    async autofill() {
+      let axios = require("axios");
+
+      const options = {
+        method: 'GET',
+        url: 'https://sameer-kumar-corporate-bs-generator-v1.p.rapidapi.com/',
+        headers: {
+          'x-rapidapi-key': '3d3030e783mshe940a7cb472611bp158d5ejsn06e0c0ffcfdc',
+          'x-rapidapi-host': 'sameer-kumar-corporate-bs-generator-v1.p.rapidapi.com'
+        }
+      };
+      let fill = await axios.request(options);
+      this.inputText = fill.data.phrase;
     }
   },
 }
@@ -225,24 +240,40 @@ label {
   opacity: 1;
 }
 
-#submit {
+.button {
   width: 100px;
   height: 40px;
   border-radius: 20px;
-  background-color: #5BBBFF;
   font-family: basic-sans, sans-serif;
   font-weight: 700;
   font-style: normal;
   font-size: 25px;
-  border: none;
-  border-bottom: 4px solid #0090F8;
+  border-width: 0px 0px 4px 0px;
   text-transform: uppercase;
   outline: none;
+  margin-bottom: 2px;
 }
 
-#submit:active {
+.button:active {
   outline: none;
-  border-bottom: 2px solid #0090F8;
+  border-width: 0px 0px 2px 0px;
+  transform: translate3d(0px, 1px, 0);
+  transition: all 0.1s;
+}
+
+#button-container {
+  flex-flow: column-reverse;
+}
+
+#submit {
+  background-color: #5BBBFF;
+  border-bottom-color: #0090F8;
+}
+
+#autofill {
+  background-color: #92FF92;
+  border-bottom-color: #00E600;
+  font-size: 17px;
 }
 
 #console {
@@ -335,12 +366,19 @@ label {
   }
 
   #submit {
-    width: 50px;
-    font-size: 18px;
+    margin-left: 10px;
   }
 
   #text-input {
     font-size: 13px;
+  }
+
+  #button-container {
+    flex-flow: row-reverse;
+  }
+
+  #body {
+    flex-flow: column;
   }
 
   .console-entry {

@@ -45,6 +45,10 @@
   margin: 10px;
 }
 
+.vertical {
+  flex-flow: column;
+}
+
 .content {
   max-width: 1000px;
   width: 100%;
