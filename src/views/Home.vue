@@ -360,6 +360,12 @@ label {
   background: transparent;
   border: none;
   outline: none;
+  transition: transform 0.3s;
+}
+
+.console-button:hover {
+  cursor: pointer;
+  transform: scale(1.2);
 }
 
 .console-label {
