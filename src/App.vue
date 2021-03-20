@@ -1,12 +1,15 @@
 <template>
 <div id="app">
-  <div id="nav">
-    <router-link to="/">Telephone</router-link> |
-    <router-link to="/history">History</router-link>
+  <div id="main-content">
+    <div id="nav">
+      <router-link to="/">Telephone</router-link> |
+      <router-link to="/history">History</router-link>
+    </div>
+    <transition name='router-fade' mode='out-in'>
+      <router-view />
+    </transition>
   </div>
-  <transition name='router-fade' mode='out-in'>
-    <router-view />
-  </transition>
+  <div id='footer'><a href='https://github.com/nolanbarry/telephone.git' target='_blank'><img src='./assets/github-dark.svg' /></a></div>
 </div>
 </template>
 
@@ -23,6 +26,22 @@
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
+}
+
+#main-content {
+  min-height: 100vh;
+}
+
+#footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+}
+
+#footer img {
+  width: 50px;
+  height: 50px;
 }
 
 #nav {

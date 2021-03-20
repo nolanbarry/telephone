@@ -70,6 +70,7 @@ export default {
   font-size: 25px;
   color: #eeeeee;
   margin-left: 2%;
+  word-wrap: break-word;
 }
 
 .empty {
@@ -104,6 +105,12 @@ export default {
   margin-top: 28px;
   color: #eeeeee;
   font-size: 20px;
+  transition: transform 0.2s;
+}
+
+.delete-entry:hover {
+  cursor: pointer;
+  transform: scale(1.3);
 }
 
 .list-enter-active,
@@ -115,5 +122,19 @@ export default {
 .list-enter,
 .list-leave-to {
   opacity: 0;
+}
+
+@media only screen and (max-width: 640px) {
+  .empty {
+    font-size: 25px;
+  }
+
+  .entry-header {
+    font-size: 12px;
+  }
+
+  .entry-text {
+    font-size: 20px;
+  }
 }
 </style>

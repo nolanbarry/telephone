@@ -370,7 +370,7 @@ label {
 }
 
 @media only screen and (max-width: 640px) {
-  #description {
+  .description {
     font-size: 16px;
   }
 
