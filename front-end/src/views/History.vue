@@ -57,7 +57,7 @@ export default {
     this.loading = true;
     await this.updateHistory()
     this.loading = false;
-    intervalID = setInterval(this.updateHistory, 3000);
+    intervalID = setInterval(this.updateHistory, 1000);
   },
   destroyed() {
     clearInterval(intervalID);
@@ -172,6 +172,7 @@ export default {
   color: #eeeeee;
   margin-left: 2%;
   word-wrap: break-word;
+  width: 100%;
 }
 
 .entry-text-container {}

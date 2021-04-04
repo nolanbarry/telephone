@@ -308,6 +308,7 @@ label {
 #console::-webkit-scrollbar {
   display: block;
   width: 8px;
+  min-width: 8px;
   background-color: transparent;
 }
 
