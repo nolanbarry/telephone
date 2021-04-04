@@ -50,6 +50,7 @@ async function getVotes(r) {
 async function removeResult(id) {
   await Result.deleteOne({_id: id})
   await Vote.deleteMany({resultID: id})
+  await Creator.deleteOne({resultID: id})
 }
 
 app.get('/api/results', async (req, res) => {
