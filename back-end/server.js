@@ -34,8 +34,14 @@ const voteSchema = new mongoose.Schema({
   vote: Number
 })
 
+const createSchema = new mongoose.Schema({
+  creatorIP: String,
+  resultID: String
+})
+
 const Result = mongoose.model('Result', resultSchema)
 const Vote = mongoose.model('Vote', voteSchema)
+const Creator = mongoose.model('Creator', createSchema)
 
 async function getVotes(r) {
   return (await Vote.find({resultID: r._id})).reduce((sum, next) => sum + next.vote, 0)
@@ -67,6 +73,15 @@ app.get('/api/results/myvotes', async(req, res) => {
   }
 })
 
+app.get('/api/results/mycreations', async(req, res) => {
+  try {
+    let creations = await Creator.find({creatorIP: req.clientIp});
+    res.send(creations.map(x => x.resultID));
+  } catch (error) {
+    res.sendStatus(500)
+  }
+})
+
 app.get('/api/results/:id', async (req, res) => {
   try {
     let result = await Result.findOne({_id: req.params.id})
@@ -83,10 +98,15 @@ app.post('/api/results', async (req, res) => {
   let result = new Result({
     input: req.body.input,
     output: req.body.output,
-    iterations: req.body.iterations
+    iterations: req.body.iterations,
+  })
+  let creator = new Creator({
+    creatorIP: req.clientIp,
+    resultID: result._id
   })
   try {
     await result.save()
+    await creator.save()
     res.send(result)
   } catch (error) {
     res.sendStatus(500)
@@ -94,6 +114,12 @@ app.post('/api/results', async (req, res) => {
 })
 
 app.delete('/api/results/:id', async (req, res) => {
+  try {
+    if (req.clientIp != (await Creator.findOne({resultID: req.params.id})).creatorIP) {
+      res.sendStatus(403)
+      return
+    }
+  } catch (error) {}
   await Result.deleteOne({_id: req.params.id}, (err) => { if (err) res.sendStatus(404)})
   await Vote.deleteMany({resultID: req.params.id}, (err) => { if (err) res.sendStatus(500)})
 })

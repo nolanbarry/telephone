@@ -7,7 +7,7 @@
       <div v-if="history.length > 0">
         <transition-group name='list'>
           <div v-for="entry in history" :key="entry.content._id">
-            <div class='delete-container'>
+            <div v-if="ownedByMe.includes(entry.content._id)" class='delete-container'>
               <button class='delete-entry' @click='remove(entry.content._id)'><i class="fas fa-times"></i></button>
             </div>
             <div class='entry'>
@@ -53,10 +53,12 @@ export default {
     this.loading = true;
     await this.updateHistory()
     this.loading = false;
+    setInterval(this.updateHistory, 3000);
   },
   data() {
     return {
       history: [],
+      ownedByMe: [],
       voteState: {},
       loading: false,
     }
@@ -73,6 +75,7 @@ export default {
         return b.votes - a.votes;
       });
       await this.updateVotes();
+      await this.updateOwnership();
     },
     async updateVotes() {
       let myVotes = (await axios.get('/api/results/myvotes')).data;
@@ -88,6 +91,9 @@ export default {
         this.voteState[vote.resultID].up = (vote.vote == 1)
         this.voteState[vote.resultID].down = (vote.vote == -1)
       }
+    },
+    async updateOwnership() {
+      this.ownedByMe = (await axios.get('/api/results/mycreations')).data
     },
     async upvote(id) {
       let beforeValue = this.voteState[id].up ? 1 : (this.voteState[id].down ? -1 : 0)
