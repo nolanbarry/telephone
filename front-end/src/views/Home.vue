@@ -42,6 +42,7 @@
 </template>
 
 <script>
+const axios = require('axios');
 import Loading from '../components/Loading.vue'
 import Key from '../assets/SecretKey.js'
 export default {
@@ -75,8 +76,9 @@ export default {
         return
       }
       this.loadingResult = true
+      let input = this.inputText;
+      let currentText = input;
       let iterations = this.inputIterations
-      let currentText = this.inputText
       let previousLanguage = null
       let nextLanguage = 'en'
       let headerColor = '#aaaaaa'
@@ -91,13 +93,14 @@ export default {
           headerColor)
         currentText = translation[0].text;
       }
-      let translation = (await this.translate(currentText, nextLanguage, 'en')).data[0].translations[0].text
-      this.log(translation, 'FINAL RESULT', '#92FF92')
-      this.$root.$data.history.unshift({
-        translation,
-        input: this.inputText
+      let translation = (await this.translate(currentText, nextLanguage, 'en')).data[0].translations[0].text;
+      this.log(translation, 'FINAL RESULT', '#92FF92');
+      axios.post('/api/results', {
+        input: input,
+        output: translation,
+        iterations: iterations
       });
-      this.loadingResult = false
+      this.loadingResult = false;
     },
     getLanguages() {
       const axios = require('axios').default

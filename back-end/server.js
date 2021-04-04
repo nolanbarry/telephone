@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const requestIp = require('request-ip');
 
 const app = express();
 
@@ -12,6 +13,9 @@ app.use(bodyParser.urlencoded({
 // parse application/json
 app.use(bodyParser.json());
 
+// use request-ip middleware
+app.use(requestIp.mw())
+
 // connect to the database
 mongoose.connect('mongodb://localhost:27017/telephone', {
   useNewUrlParser: true,
@@ -22,15 +26,54 @@ const resultSchema = new mongoose.Schema({
   input: String,
   output: String,
   iterations: Number,
-  votes: Number
 })
 
-const Result = mongoose.model('Result', resultSchema);
+const voteSchema = new mongoose.Schema({
+  resultID: String,
+  userIP: String,
+  vote: Number
+})
+
+const Result = mongoose.model('Result', resultSchema)
+const Vote = mongoose.model('Vote', voteSchema)
+
+async function getVotes(r) {
+  return (await Vote.find({resultID: r._id})).reduce((sum, next) => sum + next.vote, 0)
+}
 
 app.get('/api/results', async (req, res) => {
   try {
     let results = await Result.find()
-    res.send(results)
+    let resultsVotes = []
+    for(let r of results) {
+      let votes = await getVotes(r)
+      resultsVotes.push({
+        content: r,
+        votes: votes
+      })
+    }
+    res.send(resultsVotes)
+  } catch (error) {
+    res.sendStatus(500)
+  }
+})
+
+app.get('/api/results/myvotes', async(req, res) => {
+  try {
+    let votes = await Vote.find({userIP: req.clientIp});
+    res.send(votes);
+  } catch (error) {
+    res.sendStatus(500)
+  }
+})
+
+app.get('/api/results/:id', async (req, res) => {
+  try {
+    let result = await Result.findOne({_id: req.params.id})
+    if (!result) {
+      res.sendStatus(404)
+    }
+    res.send({content: result, votes: await getVotes(result)})
   } catch (error) {
     res.sendStatus(500)
   }
@@ -38,9 +81,9 @@ app.get('/api/results', async (req, res) => {
 
 app.post('/api/results', async (req, res) => {
   let result = new Result({
-    input: req.input,
-    output: req.output,
-    iterations: req.iterations
+    input: req.body.input,
+    output: req.body.output,
+    iterations: req.body.iterations
   })
   try {
     await result.save()
@@ -51,20 +94,35 @@ app.post('/api/results', async (req, res) => {
 })
 
 app.delete('/api/results/:id', async (req, res) => {
-  Result.deleteOne({_id: req.params.id}, err => res.sendStatus(404))
+  await Result.deleteOne({_id: req.params.id}, (err) => { if (err) res.sendStatus(404)})
+  await Vote.deleteMany({resultID: req.params.id}, (err) => { if (err) res.sendStatus(500)})
 })
 
-app.put('/api/results/:id', async (req, res) => {
-  let result = Result.findOne({_id: req.body.id})
-  if (!result) {
-    res.sendStatus(404)
-    return
+app.put('/api/results/:id/vote', async (req, res) => {
+  let existingVote = await Vote.findOne({resultID: req.params.id, userID: req.ClientIp})
+  if (existingVote) {
+    // update existing vote value
+    if (req.body.vote == 0) {
+      await existingVote.delete()
+    } else {
+      existingVote.vote = req.body.vote
+    }
+  } else {
+    // create new vote
+    if (req.body.vote != 0) {
+      existingVote = new Vote({
+        resultID: req.params.id,
+        userIP: req.clientIp,
+        vote: req.body.vote
+      })
+    }
   }
-  if (Math.abs(result.votes - req.body.votes) > 1) {
-    res.sendStatus(400)
-    return
+  try {
+    if (req.body.vote != 0) await existingVote.save()
+    res.sendStatus(200)
+  } catch (error) {
+    res.sendStatus(500)
   }
-  result.votes = req.body.votes;
 })
 
 app.listen(3001, () => console.log('Server listening on port 3001!'));
