@@ -2,7 +2,10 @@
 <div class='container'>
   <div class='content'>
     <div class='title'>History</div>
-    <div class='description'>View and vote on results history.</div>
+    <div class='description'>
+      View and vote on results history.
+      Results with a score of -3 or less will be automatically removed, or you can remove your own.
+    </div>
     <div v-if="!loading">
       <div v-if="history.length > 0">
         <transition-group name='list'>
@@ -44,6 +47,7 @@
 <script>
 const axios = require('axios');
 import Loading from '../components/Loading.vue'
+let intervalID;
 export default {
   name: 'History',
   components: {
@@ -53,7 +57,10 @@ export default {
     this.loading = true;
     await this.updateHistory()
     this.loading = false;
-    setInterval(this.updateHistory, 3000);
+    intervalID = setInterval(this.updateHistory, 3000);
+  },
+  destroyed() {
+    clearInterval(intervalID);
   },
   data() {
     return {
@@ -61,6 +68,7 @@ export default {
       ownedByMe: [],
       voteState: {},
       loading: false,
+      intervalID: null
     }
   },
   methods: {
@@ -145,6 +153,7 @@ export default {
   margin: 10px;
   display: flex;
   align-items: center;
+  margin-left: 35px;
 }
 
 .entry-header {
@@ -193,6 +202,10 @@ export default {
 .vote:hover {
   opacity: 0.5;
   cursor: pointer;
+}
+
+.vote:active {
+  opacity: 0.9;
 }
 
 .vote-value {

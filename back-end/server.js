@@ -47,6 +47,11 @@ async function getVotes(r) {
   return (await Vote.find({resultID: r._id})).reduce((sum, next) => sum + next.vote, 0)
 }
 
+async function removeResult(id) {
+  await Result.deleteOne({_id: id})
+  await Vote.deleteMany({resultID: id})
+}
+
 app.get('/api/results', async (req, res) => {
   try {
     let results = await Result.find()
@@ -120,8 +125,13 @@ app.delete('/api/results/:id', async (req, res) => {
       return
     }
   } catch (error) {}
-  await Result.deleteOne({_id: req.params.id}, (err) => { if (err) res.sendStatus(404)})
-  await Vote.deleteMany({resultID: req.params.id}, (err) => { if (err) res.sendStatus(500)})
+  let item = Result.findOne({_id: req.params.id})
+  if (!item)
+    res.sendStatus(404)
+  else {
+    removeResult(req.params.id)
+    res.sendStatus(200)
+  }
 })
 
 app.put('/api/results/:id/vote', async (req, res) => {
@@ -145,6 +155,8 @@ app.put('/api/results/:id/vote', async (req, res) => {
   }
   try {
     if (req.body.vote != 0) await existingVote.save()
+    let result = await Result.findOne({_id: req.params.id})
+    if (await getVotes(result) < -2) removeResult(req.params.id)
     res.sendStatus(200)
   } catch (error) {
     res.sendStatus(500)
