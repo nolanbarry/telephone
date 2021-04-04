@@ -135,26 +135,25 @@ app.delete('/api/results/:id', async (req, res) => {
 })
 
 app.put('/api/results/:id/vote', async (req, res) => {
-  let existingVote = await Vote.findOne({resultID: req.params.id, userID: req.ClientIp})
+  if (req.body.vote == 0) {
+    await Vote.deleteOne({resultID: req.params.id, userID: req.clientIp})
+    res.sendStatus(200)
+    return
+  }
+  let existingVote = await Vote.findOne({resultID: req.params.id, userID: req.clientIp})
   if (existingVote) {
     // update existing vote value
-    if (req.body.vote == 0) {
-      await existingVote.delete()
-    } else {
-      existingVote.vote = req.body.vote
-    }
+    existingVote.vote = req.body.vote
   } else {
     // create new vote
-    if (req.body.vote != 0) {
-      existingVote = new Vote({
-        resultID: req.params.id,
-        userIP: req.clientIp,
-        vote: req.body.vote
-      })
-    }
+    existingVote = new Vote({
+      resultID: req.params.id,
+      userIP: req.clientIp,
+      vote: req.body.vote
+    })
   }
   try {
-    if (req.body.vote != 0) await existingVote.save()
+    await existingVote.save()
     let result = await Result.findOne({_id: req.params.id})
     if (await getVotes(result) < -2) removeResult(req.params.id)
     res.sendStatus(200)
