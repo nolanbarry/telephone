@@ -195,6 +195,10 @@ export default {
   opacity: 0.9;
 }
 
+.vote img {
+  max-width: 25px;
+}
+
 .down {
   transform: rotate(180deg);
 }
