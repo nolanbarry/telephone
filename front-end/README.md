@@ -1,24 +1,3 @@
-# creative-project-3
-
-## Project setup
-```
-npm install
-```
-
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+# telephone!
+this is a small interactive website that takes input you give it and throws it through a translator a specified number of times. 
+check it out at http://telephone.nlbry.co
