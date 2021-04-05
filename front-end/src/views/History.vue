@@ -90,7 +90,6 @@ export default {
     },
     async updateVotes() {
       let myVotes = (await axios.get('/api/results/myvotes')).data;
-      console.log(myVotes)
       for (let item of this.history) {
         if (!this.voteState[item.content._id]) {
           this.$set(this.voteState, item.content._id, {
