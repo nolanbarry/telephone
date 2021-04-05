@@ -56,8 +56,12 @@ export default {
   async created() {
     this.loading = true;
     await this.updateHistory()
+    await this.updateVotes();
+    await this.updateOwnership();
     this.loading = false;
-    intervalID = setInterval(this.updateHistory, 1000);
+    intervalID = setInterval(() => {
+      if (!this.awaitingResponse) this.updateHistory()
+    }, 1000);
   },
   destroyed() {
     clearInterval(intervalID);
@@ -68,6 +72,7 @@ export default {
       ownedByMe: [],
       voteState: {},
       loading: false,
+      awaitingResponse: false,
       intervalID: null
     }
   },
@@ -82,11 +87,10 @@ export default {
       this.history = (await axios.get('/api/results')).data.sort((a, b) => {
         return b.votes - a.votes;
       });
-      await this.updateVotes();
-      await this.updateOwnership();
     },
     async updateVotes() {
       let myVotes = (await axios.get('/api/results/myvotes')).data;
+      console.log(myVotes)
       for (let item of this.history) {
         if (!this.voteState[item.content._id]) {
           this.$set(this.voteState, item.content._id, {
@@ -96,8 +100,10 @@ export default {
         }
       }
       for (let vote of myVotes) {
-        this.voteState[vote.resultID].up = (vote.vote == 1)
-        this.voteState[vote.resultID].down = (vote.vote == -1)
+        this.$set(this.voteState, vote.resultID, {
+          up: vote.vote == 1,
+          down: vote.vote == -1
+        })
       }
     },
     async updateOwnership() {
@@ -114,10 +120,12 @@ export default {
         }
       }
       this.sortHistory()
+      this.awaitingResponse = true;
       await axios.put(`/api/results/${id}/vote`, {
         vote: this.voteState[id].up ? 1 : 0
       })
-      this.updateHistory()
+      this.awaitingResponse = false;
+      this.updateHistory() //
     },
     async downvote(id) {
       let beforeValue = this.voteState[id].up ? 1 : (this.voteState[id].down ? -1 : 0)
@@ -130,9 +138,11 @@ export default {
         }
       }
       this.sortHistory()
+      this.awaitingResponse = true;
       await axios.put(`/api/results/${id}/vote`, {
         vote: this.voteState[id].down ? -1 : 0
       })
+      this.awaitingResponse = false;
       this.updateHistory()
     },
     sortHistory() {
