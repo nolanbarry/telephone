@@ -28,7 +28,7 @@
               <div class='entry-text-container'>
                 <div class='entry-header'>[result]</div>
                 <div class='entry-text'>"{{entry.content.output}}"</div>
-                <div class='entry-header'>[from input]</div>
+                <div class='entry-header'>[input, {{entry.content.iterations}} iteration{{entry.content.iterations > 2 ? "s" : ""}}]</div>
                 <div class='entry-text'>"{{entry.content.input}}"</div>
               </div>
             </div>

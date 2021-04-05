@@ -256,6 +256,7 @@ label {
   text-transform: uppercase;
   outline: none;
   margin-bottom: 2px;
+  color: #2f2f2f;
 }
 
 .button:active {
