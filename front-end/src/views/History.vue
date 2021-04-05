@@ -91,12 +91,10 @@ export default {
     async updateVotes() {
       let myVotes = (await axios.get('/api/results/myvotes')).data;
       for (let item of this.history) {
-        if (!this.voteState[item.content._id]) {
-          this.$set(this.voteState, item.content._id, {
-            up: false,
-            down: false,
-          })
-        }
+        this.$set(this.voteState, item.content._id, {
+          up: false,
+          down: false,
+        })
       }
       for (let vote of myVotes) {
         this.$set(this.voteState, vote.resultID, {
