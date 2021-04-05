@@ -95,6 +95,7 @@ export default {
           })
         }
       }
+      this.updateOwnership()
     },
     async updateVotes() {
       let myVotes = (await axios.get('/api/results/myvotes')).data;
