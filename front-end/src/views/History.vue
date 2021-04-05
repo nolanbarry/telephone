@@ -59,8 +59,8 @@ export default {
     await this.updateVotes();
     await this.updateOwnership();
     this.loading = false;
-    intervalID = setInterval(() => {
-      if (!this.awaitingResponse) this.updateHistory()
+    intervalID = setInterval(async () => {
+      if (!this.awaitingResponse) await this.updateHistory()
     }, 1000);
   },
   destroyed() {
@@ -84,17 +84,27 @@ export default {
       await this.updateHistory();
     },
     async updateHistory() {
-      this.history = (await axios.get('/api/results')).data.sort((a, b) => {
-        return b.votes - a.votes;
-      });
+      let oldHistory = this.history
+      this.history = (await axios.get('/api/results')).data
+      this.sortHistory()
+      for (let result of this.history) {
+        if (oldHistory.findIndex(x => x.content._id == result.content._id) == -1) {
+          this.$set(this.voteState, item.content._id, {
+            up: false,
+            down: false
+          })
+        }
+      }
     },
     async updateVotes() {
       let myVotes = (await axios.get('/api/results/myvotes')).data;
       for (let item of this.history) {
-        this.$set(this.voteState, item.content._id, {
-          up: false,
-          down: false,
-        })
+        if (!this.voteState[item.content._id]) {
+          this.$set(this.voteState, item.content._id, {
+            up: false,
+            down: false,
+          })
+        }
       }
       for (let vote of myVotes) {
         this.$set(this.voteState, vote.resultID, {
