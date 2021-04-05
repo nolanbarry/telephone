@@ -89,7 +89,7 @@ export default {
       this.sortHistory()
       for (let result of this.history) {
         if (oldHistory.findIndex(x => x.content._id == result.content._id) == -1) {
-          this.$set(this.voteState, item.content._id, {
+          this.$set(this.voteState, result.content._id, {
             up: false,
             down: false
           })
