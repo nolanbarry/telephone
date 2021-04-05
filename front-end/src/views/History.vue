@@ -87,10 +87,10 @@ export default {
       let oldHistory = this.history
       this.history = (await axios.get('/api/results')).data
       this.sortHistory()
-      bool different = false
+      let different = false
       for (let result of this.history) {
         if (oldHistory.findIndex(x => x.content._id == result.content._id) == -1) {
-          different = true;
+          different = true
         }
       }
       if (different) {
