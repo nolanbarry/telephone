@@ -87,15 +87,16 @@ export default {
       let oldHistory = this.history
       this.history = (await axios.get('/api/results')).data
       this.sortHistory()
+      bool different = false
       for (let result of this.history) {
         if (oldHistory.findIndex(x => x.content._id == result.content._id) == -1) {
-          this.$set(this.voteState, result.content._id, {
-            up: false,
-            down: false
-          })
+          different = true;
         }
       }
-      this.updateOwnership()
+      if (different) {
+        this.updateVotes()
+        this.updateOwnership()
+      }
     },
     async updateVotes() {
       let myVotes = (await axios.get('/api/results/myvotes')).data;
