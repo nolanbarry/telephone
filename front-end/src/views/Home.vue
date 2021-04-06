@@ -53,9 +53,13 @@ export default {
   components: {
     Loading
   },
-  async mounted() {
+  async created() {
     let response = await this.getLanguages()
     this.languages = response.data.dictionary
+    this.console = this.$root.$data.console
+  },
+  async destroyed() {
+    this.$root.$data.console = this.console // allows console to be saved when moving between views
   },
   data() {
     return {
