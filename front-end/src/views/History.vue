@@ -79,21 +79,30 @@ export default {
   methods: {
     async remove(id) {
       this.history = this.history.filter(e => e.content._id != id);
-      this.$delete(this.voteState, id + "")
       await axios.delete('/api/results/' + id);
-      await this.updateHistory();
     },
-    async updateHistory() {
-      let oldHistory = this.history
+    async updateHistory() { //
+      let oldIDs = Object.keys(this.voteState)
       this.history = (await axios.get('/api/results')).data
       this.sortHistory()
-      let different = false
-      for (let result of this.history) {
-        if (oldHistory.findIndex(x => x.content._id == result.content._id) == -1) {
-          different = true
+      let newIDs = this.history.map(x => x.content._id)
+      let masterIDList = [...newIDs]
+      oldIDs.forEach(x => {
+        if (!masterIDList.includes(x))
+          masterIDList.push(x)
+      })
+      let newResult = false
+      for (let id of masterIDList) {
+        let existedBefore = oldIDs.includes(id)
+        let existedAfter = newIDs.includes(id)
+        if (existedBefore && existedAfter) continue
+        if (existedBefore) {
+          this.$delete(this.voteState, id) // remove old results
+          this.updateOwnership()
         }
+        if (existedAfter) newResult = true; // updates votes if new results
       }
-      if (different) {
+      if (newResult) {
         this.updateVotes()
         this.updateOwnership()
       }

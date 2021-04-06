@@ -6,6 +6,7 @@
       <div class='description'>Put a sentence or phrase in the text box below and choose
         how many times you want to run it through the translator. Then click go and let 'er
         rip! You can use the autofill button to have it fill in some random corporate speak for you.
+        Once its done, you have the option to submit your result to the public history. Keep it nice!
       </div>
       <div v-if="!loadingResult" class='container' id='button-container'>
         <button id='submit' class='button' type="button" @click="submit">Go!</button>
@@ -25,7 +26,10 @@
     <div id='console'>
       <div v-for='entry in console' :key='entry.entryNumber' class='console-entry'>
         <a :style="'color: ' + entry.textColor" class='console-text'>{{'\t' + entry.text}}</a>
-        <a :style="'color: ' + entry.headerColor" class='console-header'>{{`[${entry.header}] `}}</a>
+        <a v-if="!entry.submittable" :style="'color: ' + entry.headerColor" class='console-header'>{{`[${entry.header}] `}}</a>
+        <a v-else :style="`color: ${entry.headerColor};`" class='console-header'>
+          [<a :style="`color: ${entry.headerColor}; border-bottom-color: ${entry.headerColor};`" :class='`console-header ${!entry.submitted ? "submittable" : ""}`' @click="submitResult(entry)">{{entry.submitted ? 'SUBMITTED' : 'SUBMIT'}}</a>]
+        </a>
       </div>
     </div>
     <div id='console-controls'>
@@ -42,7 +46,6 @@
 </template>
 
 <script>
-const axios = require('axios');
 import Loading from '../components/Loading.vue'
 import Key from '../assets/SecretKey.js'
 export default {
@@ -95,11 +98,7 @@ export default {
       }
       let translation = (await this.translate(currentText, nextLanguage, 'en')).data[0].translations[0].text;
       this.log(translation, 'FINAL RESULT', '#92FF92');
-      axios.post('/api/results', {
-        input: input,
-        output: translation,
-        iterations: iterations
-      });
+      this.submitLog(input, translation, iterations)
       this.loadingResult = false;
     },
     getLanguages() {
@@ -171,7 +170,20 @@ export default {
         header,
         headerColor,
         textColor,
-        entryNumber: this.console.length
+        entryNumber: this.console.length,
+        submittable: false
+      })
+    },
+    submitLog(input, output, iterations, headerColor = '#92FF92', textColor = '#eeeeee') {
+      this.console.unshift({
+        text: output,
+        header: 'FINAL RESULT',
+        headerColor,
+        textColor,
+        submittable: true,
+        submitted: false,
+        input,
+        iterations
       })
     },
     clear() {
@@ -194,6 +206,17 @@ export default {
       let fill = await axios.request(options);
       this.inputText = fill.data.phrase;
       this.loadingResult = false;
+    },
+    async submitResult(result) {
+      if (result.submittable && !result.submitted) {
+        const axios = require('axios')
+        axios.post('/api/results', {
+          input: result.input,
+          output: result.text,
+          iterations: result.iterations
+        })
+        result.submitted = true;
+      }
     }
   },
 }
@@ -347,6 +370,18 @@ label {
 
 .console-text {
   max-width: 80%;
+}
+
+.submittable {
+  text-decoration: none;
+  border-bottom-width: 3px;
+  border-bottom-style: dashed;
+}
+
+.submittable:hover {
+  text-decoration: none;
+  border-bottom-style: solid;
+  cursor: pointer;
 }
 
 #console-controls {
